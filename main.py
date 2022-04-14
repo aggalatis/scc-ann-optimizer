@@ -45,7 +45,6 @@ def main():
     x = tf.keras.utils.normalize(x , axis = 1)
 
     db.truncate_table("models")
-    counter =0
     for opt in cst.optimizers:
         for act in cst.activators:
             for neurnum in cst.neurons:
@@ -70,7 +69,6 @@ def main():
                     db.save_model(output)
                     time.sleep(3)
     db.close_connection()
-    print(counter)
 
 if __name__ == '__main__':
     load_dotenv()
