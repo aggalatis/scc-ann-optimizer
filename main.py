@@ -8,29 +8,6 @@ from dotenv import load_dotenv
 from classes.db import DB
 from classes.customizer import Customizer
 
-
-
-# def main():
-#     dataset = np.loadtxt('./data/training.csv', delimiter=';', skiprows=1)
-#     x = dataset[:, :-1]
-#     y = dataset[:, -1]
-
-#     # Data Normalization
-#     myMean =  x.mean(axis = 0)
-#     x -= myMean
-#     std = x.std(axis = 0)
-#     x /= std
-
-#     # x = tf.keras.utils.normalize(x , axis = 1)
-#     model = Sequential()
-#     model.add(Dense(64, input_dim=(len(x[0, :])), activation='relu'))
-#     model.add(Dense(32, activation='relu'))
-#     model.add(Dense(16, activation='relu'))
-#     model.add(Dense(8, activation='relu'))
-#     model.add(Dense(1, activation='sigmoid'))
-#     model.compile(loss = 'binary_crossentropy', optimizer = 'rmsprop', metrics = ['accuracy'])
-#     model.fit(x=x,y=y, epochs= 256, verbose=1)
-
 def main():
     db = DB()
     cst = Customizer()
