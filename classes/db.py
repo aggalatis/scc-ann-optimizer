@@ -33,7 +33,7 @@ class DB:
         try:
             cur = self.connection.cursor()
             cur.execute(
-                "INSERT INTO models (json_model, layers, activator, optimizer, epochs, max_accuracy, min_accuracy, max_loss, min_loss) VALUES (?, ?, ?, ? ,?, ?, ?, ?, ?)", (model["jsonModel"], model["layers"], model["activator"], model["optimizer"], model["epochs"], model["maxAcc"], model["minAcc"], model["maxLoss"], model["minLoss"]))
+                "INSERT INTO models (json_model, layers, activator, optimizer, epochs, max_accuracy, min_accuracy, max_loss, min_loss, final_acc, loss_count, test_size, learning_rate) VALUES (?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?)", (model["jsonModel"], model["layers"], model["activator"], model["optimizer"], model["epochs"], model["maxAcc"], model["minAcc"], model["maxLoss"], model["minLoss"], model["finalAcc"], model["lossCount"], model["testSize"], model["learningRate"]))
             self.connection.commit()
             cur.close()
             print("Model inserted...")

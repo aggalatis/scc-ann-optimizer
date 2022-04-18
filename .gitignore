@@ -2,3 +2,4 @@
 .vscode
 data
 .prettierrc
+__pycache__
