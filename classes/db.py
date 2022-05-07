@@ -24,6 +24,14 @@ class DB:
         cur.close()
         return retData
 
+    def get_best_models(self):
+        cur = self.connection.cursor()
+        retData = []
+        for row in cur.execute(f"SELECT * FROM models where final_acc > 0.7;"):
+            retData.append(row)
+        cur.close()
+        return retData
+
     def truncate_table(self, tableName):
         cur = self.connection.cursor()
         cur.execute(f"DELETE FROM {tableName};")
@@ -33,7 +41,7 @@ class DB:
         try:
             cur = self.connection.cursor()
             cur.execute(
-                "INSERT INTO models (json_model, layers, activator, optimizer, epochs, max_accuracy, min_accuracy, max_loss, min_loss, final_acc, loss_count, test_size, learning_rate) VALUES (?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?)", (model["jsonModel"], model["layers"], model["activator"], model["optimizer"], model["epochs"], model["maxAcc"], model["minAcc"], model["maxLoss"], model["minLoss"], model["finalAcc"], model["lossCount"], model["testSize"], model["learningRate"]))
+                "INSERT INTO models (json_model, layers, activator, optimizer, epochs, max_accuracy, min_accuracy, max_loss, min_loss, final_acc, loss_count, test_size, learning_rate, wrong_ids) VALUES (?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (model["jsonModel"], model["layers"], model["activator"], model["optimizer"], model["epochs"], model["maxAcc"], model["minAcc"], model["maxLoss"], model["minLoss"], model["finalAcc"], model["lossCount"], model["testSize"], model["learningRate"], model["wrongIds"]))
             self.connection.commit()
             cur.close()
             print("Model inserted...")
