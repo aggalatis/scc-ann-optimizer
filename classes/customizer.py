@@ -9,7 +9,7 @@ class Customizer:
         self.epochs = 100
         self.learningRates = [0.002, 0.003, 0.004, 0.005]
         self.testSizes = [0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20]
-
+        
     def min_max_normalization(self, data):
         for c in range(data.shape[1]):
             x_col = data[:, c]
@@ -35,6 +35,15 @@ class Customizer:
         if (optimizerName == 'Adadelta'): return tf.keras.optimizers.Adadelta(learning_rate=learningRate)
         if (optimizerName == 'Adagrad'): return tf.keras.optimizers.Adagrad(learning_rate=learningRate)
         return None
+    
+    def load_optimal_model(self):
+        self.activators = ['relu']
+        self.hiddenLayers = [3]
+        self.neurons = [72]
+        self.optimizers = ['Adamax']
+        self.epochs = 100
+        self.learningRates = [0.004]
+        self.testSizes = [0.12]
             
 
         

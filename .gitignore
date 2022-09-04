@@ -2,4 +2,6 @@
 .vscode
 data
 .prettierrc
+plots
 __pycache__
+Pipfile.lock
