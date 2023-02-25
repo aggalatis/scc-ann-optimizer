@@ -42,7 +42,7 @@ class WeightLogger:
             optim = cst.get_optimizer(cst.optimizers[0], cst.learningRates[0])
             model.compile(loss=loss, optimizer=optim, metrics=metrics)
             model.fit(x = X_train, y = Y_train, epochs = cst.epochs, batch_size=32, validation_data = (X_val, Y_val))
-            f = open(os.getenviron("WEIGHTS_FILE"), "w")
+            f = open(os.getenv("WEIGHTS_FILE"), "w")
             for layerNum, layer in enumerate(model.layers):
                 if layerNum != 0: continue
                 weights = layer.get_weights()[0]

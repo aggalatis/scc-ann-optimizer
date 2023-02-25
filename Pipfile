@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 tensorflow = "*"
 pandas = "*"
+shap = "*"
+catboost = "*"
 
 [dev-packages]
 

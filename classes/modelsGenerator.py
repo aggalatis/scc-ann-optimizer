@@ -1,4 +1,5 @@
 import tensorflow as tf
+import keras_tuner as kt
 import numpy as np
 from sklearn.model_selection import train_test_split
 
@@ -8,7 +9,8 @@ from classes.customizer import Customizer
 
 class ModelsGenerator:
     def __init__(self):
-        self.generate_models()
+        # self.detect_hyper_model()
+        self.save_optimal_model()
     
     def generate_models(self, deleteOldModels=False):
         db = DB()
@@ -78,6 +80,35 @@ class ModelsGenerator:
         print("All models created..")
         db.close_connection()
     
+    def detect_hyper_model(self):
+        db = DB()
+        trainingData = np.array(db.get_all_table_data("training_data"))
+        X = trainingData[:, 1:-1]
+        Y = trainingData[:, -1]
+        X = tf.keras.utils.normalize(X, axis=1)
+        X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=0.12)
+        tuner = kt.RandomSearch(self.build_model,
+                     objective='val_accuracy',
+                     max_trials =5,
+                     executions_per_trial=3)
+        tuner.search_space_summary()
+        tuner.search(X_train, Y_train, epochs=50, validation_split=0.12, validation_data=(X_val, Y_val))
+        tuner.results_summary()
+        
+
+    
+    def build_model(self, hp):
+        loss = tf.keras.losses.BinaryCrossentropy()
+        model = tf.keras.Sequential()
+        model.add(tf.keras.layers.Flatten(input_shape=(18, 1)))
+        for i in range(3):
+            model.add(tf.keras.layers.Dense(units=hp.Int('units_' + str(i), 18, 72, step=18),
+            activation=hp.Choice('act_' + str(i), ['relu'])))
+        model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+        model.compile(loss=loss, optimizer=tf.keras.optimizers.Adamax(learning_rate=0.004), metrics=['accuracy'])
+        return model
+
+    
     def analyze_best_models():
         db = DB()
         cst = Customizer()
@@ -123,3 +154,36 @@ class ModelsGenerator:
                     wrong_ids = wrong_ids + "|" + str(test_ids[i])
             final_acc =  (1 -  loss_counter / predictions.size)
             print(final_acc)
+
+
+    def save_optimal_model(self):
+        db = DB()
+        cst = Customizer()    
+        cst.load_optimal_model()
+        loss = tf.keras.losses.BinaryCrossentropy()
+        metrics = [
+            tf.keras.metrics.BinaryAccuracy(),
+            tf.keras.metrics.Precision(),
+            tf.keras.metrics.Recall()
+        ]
+
+        try:
+            trainingData = np.array(db.get_all_table_data("training_data"))
+            db.close_connection()
+            X = trainingData[:, 1:-1]
+            Y = trainingData[:, -1]
+            X = tf.keras.utils.normalize(X, axis=1)
+            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=cst.testSizes[0])
+            model = tf.keras.Sequential()
+            model.add(tf.keras.layers.Dense(72, activation='relu'))
+            model.add(tf.keras.layers.Dense(36, activation='relu'))
+            model.add(tf.keras.layers.Dense(18, activation='relu'))
+            model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+            optim = cst.get_optimizer(cst.optimizers[0], cst.learningRates[0])
+            model.compile(loss=loss, optimizer=optim, metrics=metrics)
+            model.fit(x = X_train, y = Y_train, epochs = cst.epochs, batch_size=32, validation_data = (X_val, Y_val))
+            model.save("D:\\projects\\sccModel\\saved_model")
+            
+            
+        except Exception as e:
+            print(f"Feature Importance Generator exception: {e}")
