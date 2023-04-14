@@ -35,52 +35,66 @@ class FeatureImportanceGenerator:
                 'fa_D10',
                 'fa_spec_grav',
             ]
-        self.generate_more_plots()
-        # self.generate_feature_importance()
+        shap_values, explainer = self.get_model_shap_values()
+        self.generate_bar_plot(shap_values)
+        self.generate_decision_plot(shap_values, explainer)
+        # self.generate_force_plot(shap_values, explainer)
+        self.generate_waterfall_plot(shap_values, explainer)
         # self.export_independed_feature_importance()
     
-    def generate_feature_importance(self):
+    def get_model_shap_values(self):
         db = DB()
         trainingData = np.array(db.get_all_table_data("training_data"))
         db.close_connection()
-        cst = Customizer()    
-        cst.load_optimal_model()
-        loss = tf.keras.losses.BinaryCrossentropy()
-        metrics = [
+        X = trainingData[:, 1:-1]
+        Y = trainingData[:, -1]
+        X = tf.keras.utils.normalize(X, axis=1)
+        X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=0.12)
+        layer1 = tf.keras.layers.Input(shape=(18, ))
+        layer2 = tf.keras.layers.Dense(72, activation="relu")(layer1)
+        layer3 = tf.keras.layers.Dense(36, activation="relu")(layer2)
+        layer4 = tf.keras.layers.Dense(18, activation="relu")(layer3)
+        output = tf.keras.layers.Dense(1, activation="sigmoid")(layer4)
+        func_model = tf.keras.Model(inputs=layer1, outputs=output)
+
+        func_model.compile(loss=tf.keras.losses.BinaryCrossentropy(), optimizer=tf.keras.optimizers.Adamax(learning_rate=0.004), metrics=[
             tf.keras.metrics.BinaryAccuracy(),
             tf.keras.metrics.Precision(),
             tf.keras.metrics.Recall()
-        ]
+        ])
+        func_model.fit(x=X_train, y=Y_train, epochs=100, batch_size=32, validation_data = (X_val, Y_val))
+        explainer = shap.DeepExplainer(func_model, X_train)
+        shap_values = explainer.shap_values(X_val)
+        return shap_values, explainer
+    
+    def generate_bar_plot(self, shap_values):
+        shap.summary_plot(shap_values, plot_type = 'bar', feature_names=self.feature_names)
+        print("Bar chart exported!")
+    
+    def generate_decision_plot(self, shap_values, explainer):
+        shap.decision_plot(explainer.expected_value[0].numpy(), shap_values[0][0], feature_names = self.feature_names)
+        print("Beeswarm chart exported!")
+
+    def generate_force_plot(self, shap_values, explainer):
+        shap.force_plot(explainer.expected_value[0].numpy(), shap_values[0][0], feature_names = self.feature_names)
+        print("Force chart exported!")
+
+    def generate_waterfall_plot(self, shap_values, explainer):
+        shap.plots._waterfall.waterfall_legacy(explainer.expected_value[0].numpy(), shap_values[0][0], feature_names = self.feature_names)
+        print("Waterfall chart exported!")
+    
+    def generate_feature_importance(self, model):
 
         try:
-            for i in range(10):
-                X = trainingData[:, 1:-1]
-                Y = trainingData[:, -1]
-                X = tf.keras.utils.normalize(X, axis=1)
-                X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=cst.testSizes[0])
-                ln = 1
-                neuronsNumber = cst.neurons[0]
-                model = tf.keras.Sequential()
-                while ln <= cst.hiddenLayers[0]:
-                    if (ln == 1):
-                        model.add(tf.keras.layers.Dense(cst.neurons[0], activation=cst.activators[0]))
-                    else:
-                        neuronsNumber = round(neuronsNumber / 2)
-                        model.add(tf.keras.layers.Dense(neuronsNumber, activation=cst.activators[0]))
-                    ln += 1
-                model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
-                optim = cst.get_optimizer(cst.optimizers[0], cst.learningRates[0])
-                model.compile(loss=loss, optimizer=optim, metrics=metrics)
-                model.fit(x = X_train, y = Y_train, epochs = cst.epochs, batch_size=32, validation_data = (X_val, Y_val))
-                explainer = shap.DeepExplainer(model, X_val)
-                shap_values = explainer.shap_values(X_val)
-                rf_resultX = pd.DataFrame(shap_values[0], columns = self.feature_names)
-                vals = np.abs(rf_resultX.values).mean(0)
-                shap_importance = pd.DataFrame(list(zip(self.feature_names, vals)),
-                                                columns=['col_name','feature_importance_vals'])
-                shap_importance.sort_values(by=['feature_importance_vals'],
-                                            ascending=False, inplace=True)
-                shap.plots.beeswarm(shap_values)
+            explainer = shap.DeepExplainer(model, X_val)
+            shap_values = explainer.shap_values(X_val)
+            rf_resultX = pd.DataFrame(shap_values[0], columns = self.feature_names)
+            vals = np.abs(rf_resultX.values).mean(0)
+            shap_importance = pd.DataFrame(list(zip(self.feature_names, vals)),
+                                            columns=['col_name','feature_importance_vals'])
+            shap_importance.sort_values(by=['feature_importance_vals'],
+                                        ascending=False, inplace=True)
+            shap.plots.beeswarm(shap_values)
                 # shap_importance.head()
                 # print(shap_importance) 
                 # shap_importance.to_csv(f"D:\\Projects\\sccModel\\featureImportancetests\\test_{i}.csv",sep=';', float_format='{:f}'.format)

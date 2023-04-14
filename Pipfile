@@ -8,6 +8,8 @@ tensorflow = "*"
 pandas = "*"
 shap = "*"
 catboost = "*"
+python-dotenv = "*"
+ipython = "*"
 
 [dev-packages]
 

@@ -1,5 +1,5 @@
 import tensorflow as tf
-import keras_tuner as kt
+# import keras_tuner as kt
 import numpy as np
 from sklearn.model_selection import train_test_split
 
@@ -87,13 +87,13 @@ class ModelsGenerator:
         Y = trainingData[:, -1]
         X = tf.keras.utils.normalize(X, axis=1)
         X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=0.12)
-        tuner = kt.RandomSearch(self.build_model,
-                     objective='val_accuracy',
-                     max_trials =5,
-                     executions_per_trial=3)
-        tuner.search_space_summary()
-        tuner.search(X_train, Y_train, epochs=50, validation_split=0.12, validation_data=(X_val, Y_val))
-        tuner.results_summary()
+        # tuner = kt.RandomSearch(self.build_model,
+        #              objective='val_accuracy',
+        #              max_trials =5,
+        #              executions_per_trial=3)
+        # tuner.search_space_summary()
+        # tuner.search(X_train, Y_train, epochs=50, validation_split=0.12, validation_data=(X_val, Y_val))
+        # tuner.results_summary()
         
 
     
