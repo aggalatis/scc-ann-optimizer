@@ -15,31 +15,52 @@ from classes.customizer import Customizer
 
 class FeatureImportanceGenerator:
     def __init__(self):
+        # self.feature_names = [
+        #         'w_quantity',
+        #         'c_quantity',
+        #         'c_spec_surf',
+        #         'f_quantity',
+        #         'f_D90',
+        #         'f_D70',
+        #         'f_D50',
+        #         'f_D30',
+        #         'f_D10',
+        #         'f_spec_grav',
+        #         'f_Sa',
+        #         'fa_quantity',
+        #         'fa_D90',
+        #         'fa_D70',
+        #         'fa_D50',
+        #         'fa_D30',
+        #         'fa_D10',
+        #         'fa_spec_grav',
+        #     ]
         self.feature_names = [
-                'w_quantity',
-                'c_quantity',
-                'c_spec_surf',
-                'f_quantity',
                 'f_D90',
                 'f_D70',
+                'c_spec_surf',
+                'f_quantity',
+                'fa_quantity',
+                'w_quantity',
+                'c_quantity',
                 'f_D50',
+                'f_spec_grav',
                 'f_D30',
                 'f_D10',
-                'f_spec_grav',
-                'f_Sa',
-                'fa_quantity',
+                'fa_D50',
                 'fa_D90',
                 'fa_D70',
-                'fa_D50',
+                'f_Sa',
                 'fa_D30',
                 'fa_D10',
                 'fa_spec_grav',
             ]
         shap_values, explainer = self.get_model_shap_values()
-        self.generate_bar_plot(shap_values)
-        self.generate_decision_plot(shap_values, explainer)
+        # self.generate_bar_plot(shap_values)
+        # self.generate_beeswarm_plot(shap_values)
+        # self.generate_decision_plot(shap_values, explainer)
         # self.generate_force_plot(shap_values, explainer)
-        self.generate_waterfall_plot(shap_values, explainer)
+        # self.generate_waterfall_plot(shap_values, explainer)
         # self.export_independed_feature_importance()
     
     def get_model_shap_values(self):
@@ -71,16 +92,20 @@ class FeatureImportanceGenerator:
         shap.summary_plot(shap_values, plot_type = 'bar', feature_names=self.feature_names)
         print("Bar chart exported!")
     
+    def generate_beeswarm_plot(self, shap_values):
+        shap.plots.beeswarm(shap_values=shap_values, max_display=50, show=True)
+        print("Beeswarm chart exported!")
+    
     def generate_decision_plot(self, shap_values, explainer):
         shap.decision_plot(explainer.expected_value[0].numpy(), shap_values[0][0], feature_names = self.feature_names)
-        print("Beeswarm chart exported!")
+        print("Decision chart exported!")
 
     def generate_force_plot(self, shap_values, explainer):
-        shap.force_plot(explainer.expected_value[0].numpy(), shap_values[0][0], feature_names = self.feature_names)
+        shap.force_plot(explainer.expected_value[0].numpy(), shap_values[0][0], features = self.feature_names, feature_names = self.feature_names, matplotlib = True)
         print("Force chart exported!")
 
     def generate_waterfall_plot(self, shap_values, explainer):
-        shap.plots._waterfall.waterfall_legacy(explainer.expected_value[0].numpy(), shap_values[0][0], feature_names = self.feature_names)
+        shap.plots._waterfall.waterfall_legacy(explainer.expected_value[0].numpy(), shap_values[0][0], feature_names = self.feature_names, max_display= 50)
         print("Waterfall chart exported!")
     
     def generate_feature_importance(self, model):

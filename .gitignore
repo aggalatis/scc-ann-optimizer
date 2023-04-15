@@ -1,3 +1,4 @@
 plots
 __pycache__
 Pipfile.lock
+.DS_Store
