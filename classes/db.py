@@ -27,7 +27,7 @@ class DB:
     def get_all_test_data(self, tableName, shuffle=False):
         cur = self.connection.cursor()
         retData = []
-        for row in cur.execute(f"SELECT * FROM {tableName} WHERE id = 1;"):
+        for row in cur.execute(f"SELECT * FROM {tableName};"):
             retData.append(row)
         if shuffle: random.shuffle(retData)
         cur.close()
