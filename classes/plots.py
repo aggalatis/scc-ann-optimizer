@@ -17,3 +17,15 @@ class Plot:
             plt.savefig(f"{self.plots_folder}\\{model_id}_{type}.png")
         except Exception as e:
             print(f"Saving exception: {e}")
+
+    def save_precision_plot(self, train_data, val_data, model_id, type):
+        try:
+            plot_range = list(range(1, 101))
+            plt.figure()
+            plt.plot(plot_range, train_data, '-r', label='training data')
+            plt.xlabel('epochs')
+            plt.ylabel(type)
+            plt.legend(['Training Data', 'Validation Data'])
+            plt.savefig(f"{self.plots_folder}\\{model_id}_{type}.png")
+        except Exception as e:
+            print(f"Saving exception: {e}")

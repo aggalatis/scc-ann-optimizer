@@ -3,6 +3,13 @@ import tensorflow as tf
 import numpy as np
 from sklearn.model_selection import train_test_split
 from classes.plots import Plot
+from sklearn.metrics import (roc_curve,
+                             RocCurveDisplay)
+from sklearn.calibration import calibration_curve
+from scikeras.wrappers  import KerasClassifier
+
+
+import matplotlib.pyplot as plt
 
 # Custom Classes
 from classes.db import DB
@@ -86,7 +93,8 @@ class Demonstration:
         metrics = [
             tf.keras.metrics.BinaryAccuracy(),
             tf.keras.metrics.Precision(),
-            tf.keras.metrics.Recall()
+            tf.keras.metrics.Recall(),
+            tf.keras.metrics.F1Score(),
         ]
 
         try:
@@ -112,11 +120,28 @@ class Demonstration:
             y_test = testData[:, -1]
             x_test= tf.keras.utils.normalize(x_test, axis=1)
             predictions = model.predict(x_test)
+
+            eop, mpp = calibration_curve(y_test, predictions)
+
+
+            sk_model = KerasClassifier(model=model, epochs=100, batch_size=10, verbose=0)
+
+
+            # plot perfectly calibrated
+            plt.plot([0, 1], [0, 1], label="ideal", linestyle='--')
+            # plot model reliability
+            plt.plot(mpp, eop, marker='.', label="classifier")
+            plt.legend(['Ideal', 'Classifier'])
+            plt.xlabel('Mean Classifier Score')
+            plt.ylabel('Empirical Frequency')
+            plt.title("Classifier Reliability Curve")
+            plt.show()
+
+
             wrong_prediction_counter = 0
             wrong_ids = ""
             for i in range(predictions.size):
                 predictedClass = 1
-                print(f"ID: {test_ids[i]} -> {predictions[i]}")
                 if (predictions[i] < 0.5): predictedClass = 0
                 if (predictedClass != y_test[i]):
                     wrong_prediction_counter += 1
