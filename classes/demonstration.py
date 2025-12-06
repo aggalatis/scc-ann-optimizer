@@ -111,8 +111,6 @@ class Demonstration:
             model.compile(loss=loss, optimizer=tf.keras.optimizers.Adamax(learning_rate=0.004), metrics=metrics)
             history = model.fit(x = X_train, y = Y_train, epochs = 100, batch_size=32, validation_data = (X_val, Y_val))
             model.summary()
-            # plot.save_plot(history.history['loss'], history.history['val_loss'], 'loss_plot', 'loss')
-            # plot.save_plot(history.history['binary_accuracy'], history.history['val_binary_accuracy'], 'acc_plot', 'accuracy')
 
             testData = np.array(db.get_all_test_data("test_data"))
             x_test = testData[: , 1:-1]
@@ -120,22 +118,6 @@ class Demonstration:
             y_test = testData[:, -1]
             x_test= tf.keras.utils.normalize(x_test, axis=1)
             predictions = model.predict(x_test)
-
-            eop, mpp = calibration_curve(y_test, predictions)
-
-
-            sk_model = KerasClassifier(model=model, epochs=100, batch_size=10, verbose=0)
-
-
-            # plot perfectly calibrated
-            plt.plot([0, 1], [0, 1], label="ideal", linestyle='--')
-            # plot model reliability
-            plt.plot(mpp, eop, marker='.', label="classifier")
-            plt.legend(['Ideal', 'Classifier'])
-            plt.xlabel('Mean Classifier Score')
-            plt.ylabel('Empirical Frequency')
-            plt.title("Classifier Reliability Curve")
-            plt.show()
 
 
             wrong_prediction_counter = 0
@@ -155,6 +137,5 @@ class Demonstration:
             print(f"Final Acc: {final_acc}")
             print(f"Wrong Predictions: {wrong_prediction_counter}")
             print(f"Wrong IDS: {wrong_ids}")
-            db.close_connection()
         except Exception as e:
             print(f"Exception: {e}")
